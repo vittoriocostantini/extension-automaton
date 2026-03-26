@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Will Bot Extension",
+  "version": "3.0",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.getinternet.gov/apply*"],
+      "js": [
+        "shared/debug-log.js",
+        "bot-unified.js",
+        "bot-launcher.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

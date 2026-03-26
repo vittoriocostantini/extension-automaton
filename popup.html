@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    :root {
+      --bg-a: #120a24;
+      --bg-b: #1f103d;
+      --panel: rgba(13, 10, 28, 0.92);
+      --cyan: #7df9ff;
+      --pink: #ff5fd2;
+      --violet: #a78bfa;
+      --lime: #8cff66;
+      --danger: #ff5d7a;
+      --text: #f3eeff;
+      --muted: #b6afd8;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      width: 390px;
+      padding: 16px;
+      margin: 0;
+      font-family: "Trebuchet MS", "Verdana", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(120% 100% at 0% 0%, #2a1a57 0%, transparent 60%),
+        radial-gradient(120% 100% at 100% 100%, #3f0f55 0%, transparent 60%),
+        linear-gradient(135deg, var(--bg-a), var(--bg-b));
+      border: 2px solid rgba(125, 249, 255, 0.45);
+      box-shadow: inset 0 0 0 2px rgba(255, 95, 210, 0.25), 0 0 24px rgba(125, 249, 255, 0.25);
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      text-align: center;
+      font-size: 19px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 0 0 8px rgba(125, 249, 255, 0.9), 0 0 18px rgba(255, 95, 210, 0.8);
+      border: 1px solid rgba(125, 249, 255, 0.4);
+      border-radius: 10px;
+      padding: 10px 8px;
+      background: linear-gradient(90deg, rgba(125, 249, 255, 0.12), rgba(255, 95, 210, 0.12));
+    }
+
+    label {
+      display: block;
+      margin: 8px 0 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--cyan);
+    }
+
+    input[type="file"],
+    select {
+      width: 100%;
+      margin-bottom: 8px;
+      padding: 9px;
+      font-size: 12px;
+      color: #ecf9ff;
+      background: rgba(7, 10, 22, 0.85);
+      border: 1px solid rgba(167, 139, 250, 0.7);
+      border-radius: 8px;
+      outline: none;
+      box-shadow: inset 0 0 10px rgba(125, 249, 255, 0.15);
+    }
+
+    button {
+      width: 100%;
+      margin-top: 8px;
+      padding: 12px;
+      border-radius: 9px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #ffffff;
+      text-transform: uppercase;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+    }
+    button:hover { transform: translateY(-1px); filter: brightness(1.08); }
+    button:active { transform: translateY(0); filter: brightness(0.98); }
+
+    #part1Btn {
+      margin-top: 10px;
+      background: linear-gradient(90deg, #2f75ff, #6aa2ff);
+      box-shadow: 0 0 14px rgba(47, 117, 255, 0.45);
+    }
+    #part2Btn {
+      background: linear-gradient(90deg, #a23bff, #ff5fd2);
+      box-shadow: 0 0 14px rgba(255, 95, 210, 0.45);
+    }
+
+    #controlPanel {
+      display: none;
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(140, 255, 102, 0.6);
+      background: rgba(18, 30, 22, 0.55);
+      box-shadow: inset 0 0 12px rgba(140, 255, 102, 0.18);
+    }
+    #instructionText {
+      margin-bottom: 10px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--lime);
+      text-shadow: 0 0 8px rgba(140, 255, 102, 0.45);
+    }
+    .btn-group { display: flex; gap: 8px; }
+    #resumeBtn {
+      flex: 2;
+      margin-top: 0;
+      background: linear-gradient(90deg, #36d66b, #85ff8d);
+      color: #08230f;
+    }
+    #retryBtn {
+      flex: 1;
+      margin-top: 0;
+      background: linear-gradient(90deg, #ff5d7a, #ff8aa0);
+    }
+
+    #status {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(167, 139, 250, 0.35);
+      border-radius: 8px;
+      padding: 8px;
+    }
+
+    .footer {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(125, 249, 255, 0.35);
+      text-align: center;
+      font-size: 10px;
+      color: #c4b7ff;
+      letter-spacing: 0.4px;
+    }
+
+    details {
+      margin-top: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(125, 249, 255, 0.35);
+      background: rgba(18, 20, 38, 0.65);
+      color: #d9d2ff;
+      font-size: 10px;
+      line-height: 1.45;
+    }
+    details summary {
+      cursor: pointer;
+      margin-bottom: 6px;
+      color: #fff6b3;
+      font-weight: 700;
+    }
+    details ol { margin: 6px 0 0 18px; padding: 0; }
+    details li { margin-bottom: 4px; }
+    .part-tag { color: #8ec5ff; font-weight: 700; }
+    .part-tag2 { color: #ff9be8; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h2>WILL-BOT CONTROL</h2>
+
+  <label>Archivo Excel (.xlsx)</label>
+  <input type="file" id="excelFile" accept=".xlsx,.xls" />
+
+  <label>Persona de la tabla</label>
+  <select id="personSelect">
+    <option value="">Selecciona una persona...</option>
+  </select>
+
+  <details>
+    <summary>Qué hace cada parte (revisa antes de pulsar)</summary>
+    <p class="part-tag">PARTE 1 — Registro hasta el primer CAPTCHA</p>
+    <ol>
+      <li>Pulsar «crear cuenta» y esperar el formulario.</li>
+      <li>Rellenar nombre, apellidos, fecha de nacimiento, SSN (si aplica), dirección.</li>
+      <li>Pasar a la pantalla de usuario, contraseña y email; marcar términos.</li>
+      <li>Parar: debes resolver el <strong>primer CAPTCHA</strong> en la web y usar CONTINUAR en el popup cuando el bot lo pida.</li>
+      <li>Enviar el formulario con el botón siguiente tras ese CAPTCHA.</li>
+    </ol>
+    <p>Después sigues tú en el sitio hasta poder usar Lifeline.</p>
+    <p class="part-tag2">PARTE 2 — Desde Lifeline hasta el resultado</p>
+    <ol>
+      <li>Entrar a la nueva aplicación Lifeline desde el panel.</li>
+      <li>Medicaid (marcar programa si corresponde).</li>
+      <li>Pasos finales: firma, revisión, pantalla de aprobado / duplicado / error, etc.</li>
+    </ol>
+    <p>Debes estar en la página donde ya procede Lifeline (has terminado el registro a mano si hace falta).</p>
+  </details>
+
+  <button type="button" id="part1Btn">Empezar parte 1</button>
+  <button type="button" id="part2Btn">Empezar parte 2</button>
+
+  <div id="controlPanel">
+    <div id="instructionText">⚠️ ESPERANDO ACCIÓN...</div>
+    <div class="btn-group">
+      <button id="resumeBtn">CONTINUAR ✅</button>
+      <button id="retryBtn">REINTENTAR 🔄</button>
+    </div>
+  </div>
+
+  <div id="status">Estado: En espera</div>
+  <div class="footer">Will Bot Extension v3.0 • Premium</div>
+  <script src="node_modules/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
