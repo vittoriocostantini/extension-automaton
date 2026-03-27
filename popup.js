@@ -89,6 +89,14 @@ document.getElementById('part2Btn').addEventListener('click', async () => {
   await sendToContentScript('START_BOT_PART2', got.payload);
 });
 
+document.getElementById('stopBtn').addEventListener('click', async () => {
+  await sendToContentScript('STOP_BOT', { reason: 'popup-stop-button' });
+  localStorage.removeItem('bot_waiting');
+  localStorage.removeItem('bot_msg');
+  document.getElementById('controlPanel').style.display = 'none';
+  updateStatus('🛑 Bot detenido manualmente.', '#ff5d7a');
+});
+
 document.getElementById('resumeBtn').addEventListener('click', () => handleUserAction('next'));
 document.getElementById('retryBtn').addEventListener('click', () => handleUserAction('retry'));
 

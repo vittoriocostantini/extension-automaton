@@ -66,6 +66,19 @@
     el.dispatchEvent(new Event('blur', { bubbles: true }));
   }
 
+  function setCheckboxChecked(checkbox) {
+    if (!checkbox) return false;
+
+    const nativeSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'checked')?.set;
+    if (nativeSetter) nativeSetter.call(checkbox, true);
+    else checkbox.checked = true;
+
+    checkbox.dispatchEvent(new Event('input', { bubbles: true }));
+    checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+    checkbox.dispatchEvent(new Event('blur', { bubbles: true }));
+    return Boolean(checkbox.checked);
+  }
+
   function normalizeKey(key) {
     return String(key || '')
       .toLowerCase()
@@ -263,10 +276,21 @@
     }
 
     const cb = document.querySelector(SELECTORS.final.signatureCheckbox);
-    if (cb) {
-      cb.checked = true;
-      cb.dispatchEvent(new Event('change', { bubbles: true }));
+    if (cb && !cb.checked) {
+      cb.scrollIntoView({ block: 'center' });
+      cb.dispatchEvent(new Event('focus', { bubbles: true }));
+
+      const label =
+        cb.closest('label') ||
+        (cb.id ? document.querySelector(`label[for="${cb.id}"]`) : null);
+
+      // En este formulario Angular, hacer click en el label activa estados touched/dirty.
+      if (label) label.click();
       cb.click();
+
+      if (!cb.checked) setCheckboxChecked(cb);
+      await sleep(150);
+      if (!cb.checked) setCheckboxChecked(cb);
     }
   }
 

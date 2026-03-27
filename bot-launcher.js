@@ -3,6 +3,11 @@
 
   function runPhase(action, payload) {
     if (!window.WillBotUnified) return;
+    if (action === 'STOP_BOT') {
+      window.WillBotUnified.requestStop(payload?.reason || 'launcher-stop');
+      return;
+    }
+
     window.bot_running = false;
     window.WillBotUnified.cancelPendingWaitControl();
 
@@ -20,7 +25,11 @@
   }
 
   chrome.runtime.onMessage.addListener((request) => {
-    if (request.action === 'START_BOT_PART1' || request.action === 'START_BOT_PART2') {
+    if (
+      request.action === 'START_BOT_PART1' ||
+      request.action === 'START_BOT_PART2' ||
+      request.action === 'STOP_BOT'
+    ) {
       runPhase(request.action, request.payload);
     }
     return true;
