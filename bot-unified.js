@@ -35,7 +35,7 @@
       next: '#govProgramNextSuccessButton'
     },
     review: {
-      checkbox: '#applicantInfoCheckbox',
+      checkbox: 'input[name="applicantSignatureCheckbox"]',
       nextSuccess: '#nextSuccessButton9',
       nextError: '#nextErrorButton7',
       nextFallback: '.indi-button--primary'
@@ -44,7 +44,7 @@
       signature: 'input[name="applicantSignature"]',
       signatureCheckbox: 'input[name="applicantSignatureCheckbox"]',
       signatureInitials: 'input[id^="initial"]',
-      reviewCheckbox: '#applicantInfoCheckbox',
+      reviewCheckbox: 'input[name="applicantSignatureCheckbox"]',
       nextSignature: '#nextErrorButton6, #nextSuccessButton7, .indi-button--primary'
     },
     accountMenu: '#MyAccount_btn, .dropdown-toggle'
@@ -236,11 +236,23 @@
     try {
       const cb = document.querySelector(SELECTORS.review.checkbox);
       if (cb && !cb.checked) {
+        cb.scrollIntoView({ block: 'center' });
+        cb.dispatchEvent(new Event('focus', { bubbles: true }));
+
+        const label =
+          cb.closest('label') ||
+          (cb.id ? document.querySelector(`label[for="${cb.id}"]`) : null);
+
+        if (label) label.click();
         cb.click();
-        cb.checked = true;
-        cb.dispatchEvent(new Event('change', { bubbles: true }));
+
+        if (!cb.checked) setCheckboxChecked(cb);
+        await sleep(150);
+        if (!cb.checked) setCheckboxChecked(cb);
       }
       await sleep(500);
+      const action = await waitControl('Resuelve el CAPTCHA del review y pulsa CONTINUAR.');
+      if (action === 'retry') return 'retry';
       const btnS = document.querySelector(SELECTORS.review.nextSuccess);
       const btnE = document.querySelector(SELECTORS.review.nextError);
       if (btnS && btnS.offsetHeight > 0) btnS.click();
