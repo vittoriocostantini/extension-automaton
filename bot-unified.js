@@ -432,11 +432,24 @@
     }
   }
 
+  function isNvFlowUrl() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('id') === 'nv_flow';
+    } catch {
+      return false;
+    }
+  }
+
   async function handleAccountPart1(data) {
     try {
-      const btn = await waitForElement(SELECTORS.account.start, 30000);
-      btn.click();
-      await waitForElement(SELECTORS.account.firstName, 15000);
+      if (isNvFlowUrl()) {
+        await waitForElement(SELECTORS.account.firstName, 30000);
+      } else {
+        const btn = await waitForElement(SELECTORS.account.start, 30000);
+        btn.click();
+        await waitForElement(SELECTORS.account.firstName, 15000);
+      }
     } catch (e) {
       if ((await waitControl('No detecte el formulario de registro.')) === 'retry') return 'retry';
     }

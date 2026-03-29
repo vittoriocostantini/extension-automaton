@@ -8,7 +8,10 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://www.getinternet.gov/apply*"],
+      "matches": [
+        "https://www.getinternet.gov/apply*",
+        "https://getinternet.gov/apply*"
+      ],
       "js": [
         "shared/debug-log.js",
         "bot-unified.js",
