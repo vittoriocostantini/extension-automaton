@@ -35,7 +35,7 @@
       next: '#govProgramNextSuccessButton'
     },
     review: {
-      checkbox: 'input[name="applicantSignatureCheckbox"]',
+      checkbox: '#applicantInfoCheckbox',
       nextSuccess: '#nextSuccessButton9',
       nextError: '#nextErrorButton7',
       nextFallback: '.indi-button--primary'
@@ -44,8 +44,15 @@
       signature: 'input[name="applicantSignature"]',
       signatureCheckbox: 'input[name="applicantSignatureCheckbox"]',
       signatureInitials: 'input[id^="initial"]',
-      reviewCheckbox: 'input[name="applicantSignatureCheckbox"]',
-      nextSignature: '#nextErrorButton6, #nextSuccessButton7, .indi-button--primary'
+      reviewCheckbox: '#applicantInfoCheckbox',
+      nextSignatureCandidates: [
+        '#nextErrorButton6',
+        '#nextSuccessButton7',
+        '#nextSuccessButton9',
+        '#docUploadSubmit',
+        '.indi-button--primary'
+      ],
+      submit: '#docUploadSubmit'
     },
     accountMenu: '#MyAccount_btn, .dropdown-toggle'
   };
@@ -64,19 +71,6 @@
     el.dispatchEvent(new Event('input', { bubbles: true }));
     el.dispatchEvent(new Event('change', { bubbles: true }));
     el.dispatchEvent(new Event('blur', { bubbles: true }));
-  }
-
-  function setCheckboxChecked(checkbox) {
-    if (!checkbox) return false;
-
-    const nativeSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'checked')?.set;
-    if (nativeSetter) nativeSetter.call(checkbox, true);
-    else checkbox.checked = true;
-
-    checkbox.dispatchEvent(new Event('input', { bubbles: true }));
-    checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-    checkbox.dispatchEvent(new Event('blur', { bubbles: true }));
-    return Boolean(checkbox.checked);
   }
 
   function normalizeKey(key) {
@@ -179,7 +173,7 @@
   }
 
   function waitControl(msg) {
-    chrome.runtime.sendMessage({ action: 'WAIT_USER', message: msg }).catch(() => {});
+    chrome.runtime.sendMessage({ action: 'WAIT_USER', message: msg }).catch(() => { });
     return new Promise((resolve) => {
       userActionResolver = resolve;
     });
@@ -236,23 +230,15 @@
     try {
       const cb = document.querySelector(SELECTORS.review.checkbox);
       if (cb && !cb.checked) {
-        cb.scrollIntoView({ block: 'center' });
-        cb.dispatchEvent(new Event('focus', { bubbles: true }));
-
-        const label =
-          cb.closest('label') ||
-          (cb.id ? document.querySelector(`label[for="${cb.id}"]`) : null);
-
-        if (label) label.click();
         cb.click();
-
-        if (!cb.checked) setCheckboxChecked(cb);
-        await sleep(150);
-        if (!cb.checked) setCheckboxChecked(cb);
+        cb.checked = true;
+        cb.dispatchEvent(new Event('change', { bubbles: true }));
       }
       await sleep(500);
-      const action = await waitControl('Resuelve el CAPTCHA del review y pulsa CONTINUAR.');
-      if (action === 'retry') return 'retry';
+
+      const captchaAction = await waitControl('Resuelve el CAPTCHA de Review y pulsa CONTINUAR.');
+      if (captchaAction === 'retry') return 'retry';
+
       const btnS = document.querySelector(SELECTORS.review.nextSuccess);
       const btnE = document.querySelector(SELECTORS.review.nextError);
       if (btnS && btnS.offsetHeight > 0) btnS.click();
@@ -289,20 +275,12 @@
 
     const cb = document.querySelector(SELECTORS.final.signatureCheckbox);
     if (cb && !cb.checked) {
-      cb.scrollIntoView({ block: 'center' });
-      cb.dispatchEvent(new Event('focus', { bubbles: true }));
-
-      const label =
-        cb.closest('label') ||
-        (cb.id ? document.querySelector(`label[for="${cb.id}"]`) : null);
-
-      // En este formulario Angular, hacer click en el label activa estados touched/dirty.
-      if (label) label.click();
       cb.click();
-
-      if (!cb.checked) setCheckboxChecked(cb);
-      await sleep(150);
-      if (!cb.checked) setCheckboxChecked(cb);
+      await sleep(300);
+      if (!cb.checked) {
+        cb.checked = true;
+        cb.dispatchEvent(new Event('change', { bubbles: true }));
+      }
     }
   }
 
@@ -320,6 +298,8 @@
     const detectScreen = () => {
       if (document.querySelector(SELECTORS.final.signature)) return 'FIRMA';
       if (document.querySelector(SELECTORS.final.reviewCheckbox)) return 'REVIEW';
+      const submitBtn = document.querySelector(SELECTORS.final.submit);
+      if (submitBtn && (submitBtn.offsetWidth > 0 || submitBtn.offsetHeight > 0)) return 'SUBMIT';
       const text = document.body.textContent || '';
       if (/Our Records Show That You Already Have Lifeline|Decide if you want to/i.test(text)) return 'DUPLICADO';
       if (/You Qualify|approved/i.test(text)) return 'EXITO';
@@ -364,12 +344,36 @@
     if (result === 'DUPLICADO') return handleDuplicateCase();
     if (result === 'FIRMA') {
       await fillSignatureManual(data);
-      document.querySelector(SELECTORS.final.nextSignature)?.click();
+      await sleep(500);
+      let clicked = false;
+      for (const sel of SELECTORS.final.nextSignatureCandidates) {
+        const btn = document.querySelector(sel);
+        if (btn && (btn.offsetWidth > 0 || btn.offsetHeight > 0) && !btn.disabled) {
+          btn.click();
+          clicked = true;
+          break;
+        }
+      }
+      if (!clicked) {
+        for (const sel of SELECTORS.final.nextSignatureCandidates) {
+          const btn = document.querySelector(sel);
+          if (btn) {
+            btn.click();
+            break;
+          }
+        }
+      }
       await sleep(10000);
       return handleFinalSteps(data);
     }
     if (result === 'REVIEW') {
       await handleReviewStep();
+      return handleFinalSteps(data);
+    }
+    if (result === 'SUBMIT') {
+      const submitBtn = document.querySelector(SELECTORS.final.submit);
+      if (submitBtn) submitBtn.click();
+      await sleep(10000);
       return handleFinalSteps(data);
     }
     return result;
@@ -394,7 +398,7 @@
           "(function(){const el=document.querySelector(\"button[ng-click*='lifeline']\");if(!el)return;const ng=window.angular&&window.angular.element?window.angular.element(el):null;const scope=ng&&ng.scope?ng.scope():null;if(scope&&scope.c&&scope.c.startNewApplication){scope.$apply(()=>scope.c.startNewApplication('lifeline'));}else{el.click();}})();";
         document.documentElement.appendChild(script);
         script.remove();
-      } catch (_) {}
+      } catch (_) { }
 
       const rect = btn.getBoundingClientRect();
       const x = rect.left + rect.width / 2;
